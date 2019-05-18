@@ -93,6 +93,8 @@ func (c *securitypolicies) Get(obj runtime.Object, options metav1.GetOptions) (*
 	var out runtime.Object
 	var err error
 	switch t := obj.(type) {
+	case *api.SecurityPolicy:
+		out, err = c.kc.PolicyV1beta1().PodSecurityPolicies().Get(t.ObjectMeta.Name, options)
 	case *policy.PodSecurityPolicy:
 		out, err = c.kc.PolicyV1beta1().PodSecurityPolicies().Get(t.ObjectMeta.Name, options)
 	case *scc.SecurityContextConstraints:
@@ -161,11 +163,10 @@ func (c *securitypolicies) Patch(cur *api.SecurityPolicy, transform SecurityPoli
 
 func (c *securitypolicies) PatchObject(cur, mod *api.SecurityPolicy) (*api.SecurityPolicy, kutil.VerbType, error) {
 	if c.oc != nil {
-		out, kt, err := su.PatchSecurityContextConstraintsObject(c.oc, ToSecurityContextConstraints(cur), ToSecurityContextConstraints(mod))
+		_, _, err := su.PatchSecurityContextConstraintsObject(c.oc, ToSecurityContextConstraints(cur), ToSecurityContextConstraints(mod))
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
-		return FromSecurityContextConstraints(out), kt, nil
 	}
 
 	out, kt, err := pu.PatchPodSecurityPolicyObject(c.kc, ToPodSecurityPolicy(cur), ToPodSecurityPolicy(mod))
