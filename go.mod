@@ -7,7 +7,6 @@ require (
 	contrib.go.opencensus.io/exporter/ocagent v0.5.0 // indirect
 	github.com/Azure/go-autorest v12.0.0+incompatible // indirect
 	github.com/appscode/go v0.0.0-20190424183524-60025f1135c9
-	github.com/evanphx/json-patch v4.2.0+incompatible
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/gophercloud/gophercloud v0.0.0-20190516165734-b3a23cc94cc5 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.9.0 // indirect
@@ -22,8 +21,9 @@ require (
 	k8s.io/api v0.0.0-20190515023547-db5a9d1c40eb
 	k8s.io/apimachinery v0.0.0-20190515023456-b74e4c97951f
 	k8s.io/client-go v11.0.0+incompatible
+	k8s.io/kube-openapi v0.0.0-20190510232812-a01b7d5d6c22 // indirect
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
-	kmodules.xyz/client-go v0.0.0-20190515205239-a16030cc2e50
+	kmodules.xyz/client-go v0.0.0-20190518160232-4afdbc13ba68
 	kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf
 )
 
