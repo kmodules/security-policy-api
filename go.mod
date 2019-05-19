@@ -25,6 +25,7 @@ require (
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
 	kmodules.xyz/client-go v0.0.0-20190518160232-4afdbc13ba68
 	kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf
+	sigs.k8s.io/yaml v1.1.0
 )
 
 replace (
