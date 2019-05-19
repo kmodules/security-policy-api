@@ -10,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/kubernetes/scheme"
 	kutil "kmodules.xyz/client-go"
 	pu "kmodules.xyz/client-go/policy/v1beta1"
 	scc "kmodules.xyz/openshift/apis/security/v1"
@@ -17,6 +18,13 @@ import (
 	su "kmodules.xyz/openshift/client/clientset/versioned/typed/security/v1/util"
 	api "kmodules.xyz/security-policy-api/apis/policy/v1beta1"
 )
+
+func init() {
+	err := scc.Install(scheme.Scheme)
+	if err != nil {
+		panic(err)
+	}
+}
 
 var json = jsoniter.ConfigFastest
 
