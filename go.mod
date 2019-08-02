@@ -3,33 +3,25 @@ module kmodules.xyz/security-policy-api
 go 1.12
 
 require (
-	cloud.google.com/go v0.39.0 // indirect
-	contrib.go.opencensus.io/exporter/ocagent v0.5.0 // indirect
-	github.com/Azure/go-autorest v12.0.0+incompatible // indirect
-	github.com/appscode/go v0.0.0-20190424183524-60025f1135c9
+	github.com/appscode/go v0.0.0-20190722173419-e454bf744023
 	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
-	github.com/gophercloud/gophercloud v0.0.0-20190516165734-b3a23cc94cc5 // indirect
-	github.com/grpc-ecosystem/grpc-gateway v1.9.0 // indirect
 	github.com/json-iterator/go v1.1.6
-	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f // indirect
-	golang.org/x/net v0.0.0-20190514140710-3ec191127204 // indirect
-	golang.org/x/oauth2 v0.0.0-20190517181255-950ef44c6e07 // indirect
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
-	golang.org/x/sys v0.0.0-20190516110030-61b9204099cb // indirect
-	google.golang.org/appengine v1.6.0 // indirect
-	google.golang.org/genproto v0.0.0-20190516172635-bb713bdc0e52 // indirect
 	k8s.io/api v0.0.0-20190515023547-db5a9d1c40eb
 	k8s.io/apimachinery v0.0.0-20190515023456-b74e4c97951f
 	k8s.io/client-go v11.0.0+incompatible
 	k8s.io/kube-openapi v0.0.0-20190510232812-a01b7d5d6c22 // indirect
 	k8s.io/utils v0.0.0-20190506122338-8fab8cb257d5
-	kmodules.xyz/client-go v0.0.0-20190518160232-4afdbc13ba68
-	kmodules.xyz/openshift v0.0.0-20190508141315-99ec9fc946bf
+	kmodules.xyz/client-go v0.0.0-20190802200916-043217632b6a
+	kmodules.xyz/openshift v0.0.0-20190802201709-f05cf11ae73e
 	sigs.k8s.io/yaml v1.1.0
 )
 
 replace (
-	github.com/graymeta/stow => github.com/appscode/stow v0.0.0-20190506085026-ca5baa008ea3
+	contrib.go.opencensus.io/exporter/ocagent => contrib.go.opencensus.io/exporter/ocagent v0.3.0
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v12.3.0+incompatible
+	github.com/census-instrumentation/opencensus-proto => github.com/census-instrumentation/opencensus-proto v0.1.0
+	github.com/golang/protobuf => github.com/golang/protobuf v1.2.0
+	go.opencensus.io => go.opencensus.io v0.21.0
 	k8s.io/api => k8s.io/api v0.0.0-20190313235455-40a48860b5ab
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20190315093550-53c4693659ed
 	k8s.io/apimachinery => github.com/kmodules/apimachinery v0.0.0-20190508045248-a52a97a7a2bf
