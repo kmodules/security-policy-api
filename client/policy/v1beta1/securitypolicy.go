@@ -1,9 +1,31 @@
+/*
+Copyright The Kmodules Authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package v1beta1
 
 import (
 	"fmt"
+
+	kutil "kmodules.xyz/client-go"
+	pu "kmodules.xyz/client-go/policy/v1beta1"
+	scc "kmodules.xyz/openshift/apis/security/v1"
+	occ "kmodules.xyz/openshift/client/clientset/versioned"
+	su "kmodules.xyz/openshift/client/clientset/versioned/typed/security/v1/util"
+	api "kmodules.xyz/security-policy-api/apis/policy/v1beta1"
+
 	"github.com/golang/glog"
-	jsoniter "github.com/json-iterator/go"
 	policy "k8s.io/api/policy/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -11,12 +33,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	kutil "kmodules.xyz/client-go"
-	pu "kmodules.xyz/client-go/policy/v1beta1"
-	scc "kmodules.xyz/openshift/apis/security/v1"
-	occ "kmodules.xyz/openshift/client/clientset/versioned"
-	su "kmodules.xyz/openshift/client/clientset/versioned/typed/security/v1/util"
-	api "kmodules.xyz/security-policy-api/apis/policy/v1beta1"
 )
 
 func init() {
@@ -25,8 +41,6 @@ func init() {
 		panic(err)
 	}
 }
-
-var json = jsoniter.ConfigFastest
 
 type SecurityPolicyTransformerFunc func(*api.SecurityPolicy) *api.SecurityPolicy
 
