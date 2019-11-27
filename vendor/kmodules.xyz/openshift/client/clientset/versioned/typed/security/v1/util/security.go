@@ -1,6 +1,10 @@
 package util
 
 import (
+	kutil "kmodules.xyz/client-go"
+	api "kmodules.xyz/openshift/apis/security/v1"
+	cs "kmodules.xyz/openshift/client/clientset/versioned"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
@@ -8,9 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/apimachinery/pkg/util/wait"
-	kutil "kmodules.xyz/client-go"
-	api "kmodules.xyz/openshift/apis/security/v1"
-	cs "kmodules.xyz/openshift/client/clientset/versioned"
 )
 
 func CreateOrPatchSecurityContextConstraints(c cs.Interface, meta metav1.ObjectMeta, transform func(*api.SecurityContextConstraints) *api.SecurityContextConstraints) (*api.SecurityContextConstraints, kutil.VerbType, error) {
