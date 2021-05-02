@@ -1,5 +1,5 @@
 /*
-Copyright The Kmodules Authors.
+Copyright AppsCode Inc. and Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -23,11 +23,8 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/appscode/go/encoding/json/types"
-	"github.com/appscode/go/log"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/fatih/structs"
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 )
@@ -99,88 +96,59 @@ func DeepHashObject(hasher hash.Hash, objectToWrite interface{}) {
 	printer.Fprintf(hasher, "%#v", objectToWrite)
 }
 
-func AlreadyReconciled(o interface{}) bool {
-	var generation, observedGeneration *types.IntHash
+func MustAlreadyReconciled(o interface{}) bool {
+	reconciled, err := AlreadyReconciled(o)
+	if err != nil {
+		panic("failed to extract status.observedGeneration field due to err:" + err.Error())
+	}
+	return reconciled
+}
+
+func AlreadyReconciled(o interface{}) (bool, error) {
+	var generation, observedGeneration int64
 	var err error
 
 	switch obj := o.(type) {
 	case *unstructured.Unstructured:
-		generation = types.IntHashForGeneration(obj.GetGeneration())
-		var val interface{}
-		val, _, err = unstructured.NestedFieldNoCopy(obj.Object, "status", "observedGeneration")
-		if err == nil {
-			observedGeneration, err = types.ParseIntHash(val)
-		}
+		generation, observedGeneration, err = extractGenerationFromUnstructured(obj)
 	case metav1.Object:
-		st := structs.New(o)
-		generation = types.IntHashForGeneration(obj.GetGeneration())
-		observedGeneration, err = types.ParseIntHash(st.Field("Status").Field("ObservedGeneration").Value())
+		generation, observedGeneration, err = extractGenerationFromObject(obj)
 	default:
 		err = fmt.Errorf("unknown object type %s", reflect.TypeOf(o).String())
 	}
 	if err != nil {
-		panic("failed to extract status.observedGeneration field due to err:" + err.Error())
+		return false, err
 	}
-	return observedGeneration.MatchGeneration(generation)
+	return observedGeneration == generation, nil
 }
 
-// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
-func AlreadyObserved(o interface{}, enableStatusSubresource bool) bool {
-	if !enableStatusSubresource {
-		return false
-	}
-
-	obj := o.(metav1.Object)
-	st := structs.New(o)
-
-	cur := types.NewIntHash(obj.GetGeneration(), GenerationHash(obj))
-	observed, err := types.ParseIntHash(st.Field("Status").Field("ObservedGeneration").Value())
+func extractGenerationFromUnstructured(obj *unstructured.Unstructured) (int64, int64, error) {
+	val, found, err := unstructured.NestedFieldNoCopy(obj.Object, "status", "observedGeneration")
 	if err != nil {
-		panic(err)
+		return -1, -1, err
+	} else if !found {
+		return obj.GetGeneration(), -1, nil
 	}
-	return observed.Equal(cur)
+	observedGeneration, ok := val.(int64)
+	if !ok {
+		return -1, -1, fmt.Errorf("%s %s/%s status.observedGeneration %+v is not int64", obj.GroupVersionKind(), obj.GetNamespace(), obj.GetName(), val)
+	}
+	return obj.GetGeneration(), observedGeneration, nil
 }
 
-// Deprecated, should not be used after we drop support for Kubernetes 1.10. Use AlreadyReconciled
-func AlreadyObserved2(old, nu interface{}, enableStatusSubresource bool) bool {
-	if old == nil {
-		return nu == nil
+func extractGenerationFromObject(obj metav1.Object) (int64, int64, error) {
+	st := structs.New(obj)
+	fieldStatus, found := st.FieldOk("Status")
+	if !found {
+		return obj.GetGeneration(), -1, nil
 	}
-	if nu == nil { // && old != nil
-		return false
+	fieldObsGen, found := fieldStatus.FieldOk("ObservedGeneration")
+	if !found {
+		return obj.GetGeneration(), -1, nil
 	}
-	if old == nu {
-		return true
+	observedGeneration, ok := fieldObsGen.Value().(int64)
+	if !ok {
+		return -1, -1, fmt.Errorf("%s %s/%s status.observedGeneration %+v is not int64", reflect.TypeOf(obj).String(), obj.GetNamespace(), obj.GetName(), fieldObsGen.Value())
 	}
-
-	oldObj := old.(metav1.Object)
-	nuObj := nu.(metav1.Object)
-
-	oldStruct := structs.New(old)
-	nuStruct := structs.New(nu)
-
-	var match bool
-
-	if enableStatusSubresource {
-		observed, err := types.ParseIntHash(nuStruct.Field("Status").Field("ObservedGeneration").Value())
-		if err != nil {
-			panic(err)
-		}
-		gen := types.NewIntHash(nuObj.GetGeneration(), GenerationHash(nuObj))
-		match = gen.Equal(observed)
-	} else {
-		match = Equal(oldStruct.Field("Spec").Value(), nuStruct.Field("Spec").Value())
-		if match {
-			match = reflect.DeepEqual(oldObj.GetLabels(), nuObj.GetLabels())
-		}
-		if match {
-			match = EqualAnnotation(oldObj.GetAnnotations(), nuObj.GetAnnotations())
-		}
-	}
-
-	if !match && bool(glog.V(log.LevelDebug)) {
-		diff := Diff(old, nu)
-		glog.V(log.LevelDebug).Infof("%s %s/%s has changed. Diff: %s", GetKind(old), oldObj.GetNamespace(), oldObj.GetName(), diff)
-	}
-	return match
+	return obj.GetGeneration(), observedGeneration, nil
 }
