@@ -13,9 +13,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
 package v1beta1
 
 import (
+	"context"
 	"fmt"
 
 	kutil "kmodules.xyz/client-go"
@@ -52,13 +54,13 @@ type SecurityPoliciesGetter interface {
 
 // SecurityPolicyInterface has methods to work with SecurityPolicy resources.
 type SecurityPolicyInterface interface {
-	Create(*api.SecurityPolicy) (*api.SecurityPolicy, error)
-	Delete(obj runtime.Object, options *metav1.DeleteOptions) error
-	Get(obj runtime.Object, options metav1.GetOptions) (*api.SecurityPolicy, error)
-	List(opts metav1.ListOptions) (*api.SecurityPolicyList, error)
-	Patch(cur *api.SecurityPolicy, transform SecurityPolicyTransformerFunc) (*api.SecurityPolicy, kutil.VerbType, error)
-	PatchObject(cur, mod *api.SecurityPolicy) (*api.SecurityPolicy, kutil.VerbType, error)
-	CreateOrPatch(obj runtime.Object, transform SecurityPolicyTransformerFunc) (*api.SecurityPolicy, kutil.VerbType, error)
+	Create(ctx context.Context, obj *api.SecurityPolicy, opts metav1.CreateOptions) (*api.SecurityPolicy, error)
+	Delete(ctx context.Context, obj runtime.Object, opts metav1.DeleteOptions) error
+	Get(ctx context.Context, obj runtime.Object, opts metav1.GetOptions) (*api.SecurityPolicy, error)
+	List(ctx context.Context, opts metav1.ListOptions) (*api.SecurityPolicyList, error)
+	Patch(ctx context.Context, cur *api.SecurityPolicy, transform SecurityPolicyTransformerFunc, opts metav1.PatchOptions) (*api.SecurityPolicy, kutil.VerbType, error)
+	PatchObject(ctx context.Context, cur, mod *api.SecurityPolicy, opts metav1.PatchOptions) (*api.SecurityPolicy, kutil.VerbType, error)
+	CreateOrPatch(ctx context.Context, obj runtime.Object, transform SecurityPolicyTransformerFunc, opts metav1.PatchOptions) (*api.SecurityPolicy, kutil.VerbType, error)
 }
 
 // securitypolicies implements SecurityPolicyInterface
@@ -77,13 +79,13 @@ func newSecurityPolicies(kc kubernetes.Interface, oc occ.Interface) *securitypol
 	}
 }
 
-func (c *securitypolicies) Create(w *api.SecurityPolicy) (*api.SecurityPolicy, error) {
-	out, err := c.kc.PolicyV1beta1().PodSecurityPolicies().Create(ToPodSecurityPolicy(w))
+func (c *securitypolicies) Create(ctx context.Context, obj *api.SecurityPolicy, opts metav1.CreateOptions) (*api.SecurityPolicy, error) {
+	out, err := c.kc.PolicyV1beta1().PodSecurityPolicies().Create(ctx, ToPodSecurityPolicy(obj), opts)
 	if err != nil {
 		return nil, err
 	}
 	if c.oc != nil {
-		_, err = c.oc.SecurityV1().SecurityContextConstraints().Create(ToSecurityContextConstraints(w))
+		_, err = c.oc.SecurityV1().SecurityContextConstraints().Create(ctx, ToSecurityContextConstraints(obj), opts)
 		if err != nil {
 			return nil, err
 		}
@@ -91,36 +93,36 @@ func (c *securitypolicies) Create(w *api.SecurityPolicy) (*api.SecurityPolicy, e
 	return FromPodSecurityPolicy(out), nil
 }
 
-func (c *securitypolicies) Delete(obj runtime.Object, options *metav1.DeleteOptions) error {
+func (c *securitypolicies) Delete(ctx context.Context, obj runtime.Object, opts metav1.DeleteOptions) error {
 	switch t := obj.(type) {
 	case *api.SecurityPolicy:
-		err := c.kc.PolicyV1beta1().PodSecurityPolicies().Delete(t.ObjectMeta.Name, options)
+		err := c.kc.PolicyV1beta1().PodSecurityPolicies().Delete(ctx, t.ObjectMeta.Name, opts)
 		if err != nil {
 			return err
 		}
 		if c.oc != nil {
-			return c.oc.SecurityV1().SecurityContextConstraints().Delete(t.ObjectMeta.Name, options)
+			return c.oc.SecurityV1().SecurityContextConstraints().Delete(ctx, t.ObjectMeta.Name, opts)
 		}
 		return nil
 	case *policy.PodSecurityPolicy:
-		return c.kc.PolicyV1beta1().PodSecurityPolicies().Delete(t.ObjectMeta.Name, options)
+		return c.kc.PolicyV1beta1().PodSecurityPolicies().Delete(ctx, t.ObjectMeta.Name, opts)
 	case *scc.SecurityContextConstraints:
-		return c.oc.SecurityV1().SecurityContextConstraints().Delete(t.ObjectMeta.Name, options)
+		return c.oc.SecurityV1().SecurityContextConstraints().Delete(ctx, t.ObjectMeta.Name, opts)
 	default:
 		return fmt.Errorf("the object is not a security policy")
 	}
 }
 
-func (c *securitypolicies) Get(obj runtime.Object, options metav1.GetOptions) (*api.SecurityPolicy, error) {
+func (c *securitypolicies) Get(ctx context.Context, obj runtime.Object, opts metav1.GetOptions) (*api.SecurityPolicy, error) {
 	var out runtime.Object
 	var err error
 	switch t := obj.(type) {
 	case *api.SecurityPolicy:
-		out, err = c.kc.PolicyV1beta1().PodSecurityPolicies().Get(t.ObjectMeta.Name, options)
+		out, err = c.kc.PolicyV1beta1().PodSecurityPolicies().Get(ctx, t.ObjectMeta.Name, opts)
 	case *policy.PodSecurityPolicy:
-		out, err = c.kc.PolicyV1beta1().PodSecurityPolicies().Get(t.ObjectMeta.Name, options)
+		out, err = c.kc.PolicyV1beta1().PodSecurityPolicies().Get(ctx, t.ObjectMeta.Name, opts)
 	case *scc.SecurityContextConstraints:
-		out, err = c.oc.SecurityV1().SecurityContextConstraints().Get(t.ObjectMeta.Name, options)
+		out, err = c.oc.SecurityV1().SecurityContextConstraints().Get(ctx, t.ObjectMeta.Name, opts)
 	default:
 		err = fmt.Errorf("the object is not a pod or does not have a pod template")
 	}
@@ -130,7 +132,7 @@ func (c *securitypolicies) Get(obj runtime.Object, options metav1.GetOptions) (*
 	return ConvertToSecurityPolicy(out)
 }
 
-func (c *securitypolicies) List(opts metav1.ListOptions) (*api.SecurityPolicyList, error) {
+func (c *securitypolicies) List(ctx context.Context, opts metav1.ListOptions) (*api.SecurityPolicyList, error) {
 	options := metav1.ListOptions{
 		LabelSelector:   opts.LabelSelector,
 		FieldSelector:   opts.FieldSelector,
@@ -141,7 +143,7 @@ func (c *securitypolicies) List(opts metav1.ListOptions) (*api.SecurityPolicyLis
 
 	if c.kc != nil {
 		{
-			objects, err := c.kc.PolicyV1beta1().PodSecurityPolicies().List(options)
+			objects, err := c.kc.PolicyV1beta1().PodSecurityPolicies().List(ctx, options)
 			if err != nil {
 				return nil, err
 			}
@@ -159,7 +161,7 @@ func (c *securitypolicies) List(opts metav1.ListOptions) (*api.SecurityPolicyLis
 		}
 	}
 	if c.oc != nil {
-		objects, err := c.oc.SecurityV1().SecurityContextConstraints().List(options)
+		objects, err := c.oc.SecurityV1().SecurityContextConstraints().List(ctx, options)
 		if err != nil {
 			return nil, err
 		}
@@ -179,39 +181,39 @@ func (c *securitypolicies) List(opts metav1.ListOptions) (*api.SecurityPolicyLis
 	return &list, nil
 }
 
-func (c *securitypolicies) Patch(cur *api.SecurityPolicy, transform SecurityPolicyTransformerFunc) (*api.SecurityPolicy, kutil.VerbType, error) {
-	return c.PatchObject(cur, transform(cur.DeepCopy()))
+func (c *securitypolicies) Patch(ctx context.Context, cur *api.SecurityPolicy, transform SecurityPolicyTransformerFunc, opts metav1.PatchOptions) (*api.SecurityPolicy, kutil.VerbType, error) {
+	return c.PatchObject(ctx, cur, transform(cur.DeepCopy()), opts)
 }
 
-func (c *securitypolicies) PatchObject(cur, mod *api.SecurityPolicy) (*api.SecurityPolicy, kutil.VerbType, error) {
+func (c *securitypolicies) PatchObject(ctx context.Context, cur, mod *api.SecurityPolicy, opts metav1.PatchOptions) (*api.SecurityPolicy, kutil.VerbType, error) {
 	if c.oc != nil {
-		_, _, err := su.PatchSecurityContextConstraintsObject(c.oc, ToSecurityContextConstraints(cur), ToSecurityContextConstraints(mod))
+		_, _, err := su.PatchSecurityContextConstraintsObject(ctx, c.oc, ToSecurityContextConstraints(cur), ToSecurityContextConstraints(mod), opts)
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
 	}
 
-	out, kt, err := pu.PatchPodSecurityPolicyObject(c.kc, ToPodSecurityPolicy(cur), ToPodSecurityPolicy(mod))
+	out, kt, err := pu.PatchPodSecurityPolicyObject(ctx, c.kc, ToPodSecurityPolicy(cur), ToPodSecurityPolicy(mod), opts)
 	if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
 	return FromPodSecurityPolicy(out), kt, nil
 }
 
-func (c *securitypolicies) CreateOrPatch(obj runtime.Object, transform SecurityPolicyTransformerFunc) (*api.SecurityPolicy, kutil.VerbType, error) {
+func (c *securitypolicies) CreateOrPatch(ctx context.Context, obj runtime.Object, transform SecurityPolicyTransformerFunc, opts metav1.PatchOptions) (*api.SecurityPolicy, kutil.VerbType, error) {
 	gvk := obj.GetObjectKind().GroupVersionKind()
 	if gvk.String() == "" {
 		return nil, kutil.VerbUnchanged, fmt.Errorf("obj missing GroupVersionKind")
 	}
 
-	cur, err := c.Get(obj, metav1.GetOptions{})
+	cur, err := c.Get(ctx, obj, metav1.GetOptions{})
 	if kerr.IsNotFound(err) {
 		name, err := meta.NewAccessor().Name(obj)
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
 		glog.V(3).Infof("Creating %s %s.", gvk, name)
-		out, err := c.Create(transform(&api.SecurityPolicy{
+		out, err := c.Create(ctx, transform(&api.SecurityPolicy{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       gvk.Kind,
 				APIVersion: gvk.GroupVersion().String(),
@@ -219,10 +221,10 @@ func (c *securitypolicies) CreateOrPatch(obj runtime.Object, transform SecurityP
 			ObjectMeta: metav1.ObjectMeta{
 				Name: name,
 			},
-		}))
+		}), metav1.CreateOptions{})
 		return out, kutil.VerbCreated, err
 	} else if err != nil {
 		return nil, kutil.VerbUnchanged, err
 	}
-	return c.Patch(cur, transform)
+	return c.Patch(ctx, cur, transform, opts)
 }

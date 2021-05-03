@@ -16,6 +16,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -94,30 +95,30 @@ func main() {
 			},
 		},
 	}
-	s2, err := client.SecurityPolicies().Create(&s1)
+	s2, err := client.SecurityPolicies().Create(context.TODO(), &s1, metav1.CreateOptions{})
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
 
-	s3, kt, err := client.SecurityPolicies().Patch(s2, func(in *api.SecurityPolicy) *api.SecurityPolicy {
+	s3, kt, err := client.SecurityPolicies().Patch(context.TODO(), s2, func(in *api.SecurityPolicy) *api.SecurityPolicy {
 		in.Spec.Privileged = true
 		return in
-	})
+	}, metav1.PatchOptions{})
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
 	fmt.Println(s3, kt)
 
-	list, err := client.SecurityPolicies().List(metav1.ListOptions{})
+	list, err := client.SecurityPolicies().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
 	}
 	fmt.Println(list)
 
-	err = client.SecurityPolicies().Delete(s3, &metav1.DeleteOptions{})
+	err = client.SecurityPolicies().Delete(context.TODO(), s3, metav1.DeleteOptions{})
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
