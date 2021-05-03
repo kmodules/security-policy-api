@@ -8,9 +8,9 @@ require (
 	k8s.io/api v0.21.0
 	k8s.io/apimachinery v0.21.0
 	k8s.io/client-go v0.21.0
-	k8s.io/utils v0.0.0-20201110183641-67b214c5f920
-	kmodules.xyz/client-go v0.0.0-20210502215034-b73197efff3f
-	kmodules.xyz/openshift v0.0.0-20210502215728-d1a9afb41893
+	k8s.io/utils v0.0.0-20210111153108-fddb29f9d009
+	kmodules.xyz/client-go v0.0.0-20210503064222-c8c59295a3a5
+	kmodules.xyz/openshift v0.0.0-20210503064748-50cdbee251d7
 	sigs.k8s.io/yaml v1.2.0
 )
 
