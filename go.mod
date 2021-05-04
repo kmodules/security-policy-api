@@ -9,8 +9,8 @@ require (
 	k8s.io/client-go v0.21.0
 	k8s.io/klog/v2 v2.8.0
 	k8s.io/utils v0.0.0-20210111153108-fddb29f9d009
-	kmodules.xyz/client-go v0.0.0-20210503064222-c8c59295a3a5
-	kmodules.xyz/openshift v0.0.0-20210503064748-50cdbee251d7
+	kmodules.xyz/client-go v0.0.0-20210504024435-1eb80721e9b8
+	kmodules.xyz/openshift v0.0.0-20210504013521-0521443bd650
 	sigs.k8s.io/yaml v1.2.0
 )
 
