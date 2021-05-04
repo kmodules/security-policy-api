@@ -27,7 +27,6 @@ import (
 	su "kmodules.xyz/openshift/client/clientset/versioned/typed/security/v1/util"
 	api "kmodules.xyz/security-policy-api/apis/policy/v1beta1"
 
-	"github.com/golang/glog"
 	policy "k8s.io/api/policy/v1beta1"
 	kerr "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -35,6 +34,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/klog/v2"
 )
 
 func init() {
@@ -212,7 +212,7 @@ func (c *securitypolicies) CreateOrPatch(ctx context.Context, obj runtime.Object
 		if err != nil {
 			return nil, kutil.VerbUnchanged, err
 		}
-		glog.V(3).Infof("Creating %s %s.", gvk, name)
+		klog.V(3).Infof("Creating %s %s.", gvk, name)
 		out, err := c.Create(ctx, transform(&api.SecurityPolicy{
 			TypeMeta: metav1.TypeMeta{
 				Kind:       gvk.Kind,

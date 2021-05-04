@@ -1,13 +1,13 @@
 module kmodules.xyz/security-policy-api
 
-go 1.12
+go 1.15
 
 require (
 	github.com/appscode/go v0.0.0-20191119085241-0887d8ec2ecc
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	k8s.io/api v0.21.0
 	k8s.io/apimachinery v0.21.0
 	k8s.io/client-go v0.21.0
+	k8s.io/klog/v2 v2.8.0
 	k8s.io/utils v0.0.0-20210111153108-fddb29f9d009
 	kmodules.xyz/client-go v0.0.0-20210503064222-c8c59295a3a5
 	kmodules.xyz/openshift v0.0.0-20210503064748-50cdbee251d7
