@@ -21,7 +21,7 @@ import (
 	scc "kmodules.xyz/openshift/apis/security/v1"
 	api "kmodules.xyz/security-policy-api/apis/policy/v1beta1"
 
-	"github.com/appscode/go/types"
+	"gomodules.xyz/pointer"
 	policy "k8s.io/api/policy/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -235,11 +235,11 @@ func toRunAsUserStrategyOptions(in policy.RunAsUserStrategyOptions) scc.RunAsUse
 	out.Type = scc.RunAsUserStrategyType(string(in.Rule))
 	if len(in.Ranges) == 1 {
 		if in.Ranges[0].Min == in.Ranges[0].Max {
-			out.UID = types.Int64P(in.Ranges[0].Min)
+			out.UID = pointer.Int64P(in.Ranges[0].Min)
 		} else {
 			out.Type = scc.RunAsUserStrategyMustRunAsRange
-			out.UIDRangeMin = types.Int64P(in.Ranges[0].Min)
-			out.UIDRangeMax = types.Int64P(in.Ranges[0].Max)
+			out.UIDRangeMin = pointer.Int64P(in.Ranges[0].Min)
+			out.UIDRangeMax = pointer.Int64P(in.Ranges[0].Max)
 		}
 	} else if len(in.Ranges) > 1 {
 		var min int64 = math.MaxInt64
@@ -250,11 +250,11 @@ func toRunAsUserStrategyOptions(in policy.RunAsUserStrategyOptions) scc.RunAsUse
 		}
 
 		if min == max {
-			out.UID = types.Int64P(min)
+			out.UID = pointer.Int64P(min)
 		} else {
 			out.Type = scc.RunAsUserStrategyMustRunAsRange
-			out.UIDRangeMin = types.Int64P(min)
-			out.UIDRangeMax = types.Int64P(max)
+			out.UIDRangeMin = pointer.Int64P(min)
+			out.UIDRangeMax = pointer.Int64P(max)
 		}
 	}
 	return out
