@@ -9,7 +9,11 @@ require (
 	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
+	github.com/modern-go/reflect2 v1.0.2
 	github.com/sergi/go-diff v1.2.0 // indirect
+	go.bytebuilders.dev/license-proxyserver v0.0.3
+	golang.org/x/crypto v0.6.0
+	golang.org/x/net v0.7.0
 	gomodules.xyz/pointer v0.1.0
 	k8s.io/api v0.21.1
 	k8s.io/apimachinery v0.21.1
